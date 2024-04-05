@@ -1,42 +1,81 @@
-import robocode.Robot;
+import robocode.AdvancedRobot;
 import robocode.ScannedRobotEvent;
+import robocode.util.Utils;
 import java.awt.Color;
-import java.util.Random;
 
-public class MyRobot extends Robot {
-    Random rand = new Random();
+public class CaipirinhaKiller extends AdvancedRobot {
+    private static final double CLOSE_DISTANCE = 150;
+    private int corner = 0;
 
     public void run() {
-        // Set the robot's colors
-        setColors(Color.white, // Body
-                  Color.green, // Gun
-                  Color.white, // Radar
-                  Color.white, // Bullet
-                  Color.white); // Scan arc
-        
-        // Robot main loop
+        setColors(Color.white, Color.green, Color.white);
         while(true) {
-            turnGunRight(360); // Continuously turn gun to scan
+            goToCorner();
+            execute();
         }
     }
 
     public void onScannedRobot(ScannedRobotEvent e) {
-        // Aim and shoot
-        double enemyBearing = this.getHeading() + e.getBearing();
-        double gunTurnAmount = enemyBearing - this.getGunHeading();
-        turnGunRight(normalizeBearing(gunTurnAmount));
-        fire(1);
-        
-        // Turn right by a random amount between 20 and 60 degrees
-        turnRight(20 + rand.nextInt(41));
-        
-        // Move ahead by a random distance between 20 and 100 units
-        ahead(20 + rand.nextInt(81));
+        if (e.getDistance() < CLOSE_DISTANCE) {
+            double bulletPower = Math.min(3.0, getEnergy());
+            double myX = getX();
+            double myY = getY();
+            double absoluteBearing = getHeadingRadians() + e.getBearingRadians();
+            double enemyX = getX() + e.getDistance() * Math.sin(absoluteBearing);
+            double enemyY = getY() + e.getDistance() * Math.cos(absoluteBearing);
+            double enemyHeading = e.getHeadingRadians();
+            double enemyVelocity = e.getVelocity();
+
+            double deltaTime = 0;
+            double battleFieldHeight = getBattleFieldHeight(),
+                   battleFieldWidth = getBattleFieldWidth();
+            double predictedX = enemyX, predictedY = enemyY;
+            while((++deltaTime) * (20.0 - 3.0 * bulletPower) <
+                  Math.sqrt((predictedX - myX) * (predictedX - myX) + (predictedY - myY) * (predictedY - myY))) {
+                predictedX += Math.sin(enemyHeading) * enemyVelocity;
+                predictedY += Math.cos(enemyHeading) * enemyVelocity;
+                if( predictedX < 18.0 
+                    || predictedY < 18.0
+                    || predictedX > battleFieldWidth - 18.0
+                    || predictedY > battleFieldHeight - 18.0){
+
+                    predictedX = Math.min(Math.max(18.0, predictedX), 
+                                          battleFieldWidth - 18.0); 
+                    predictedY = Math.min(Math.max(18.0, predictedY), 
+                                          battleFieldHeight - 18.0);
+                    break;
+                }
+            }
+            double theta = Utils.normalAbsoluteAngle(Math.atan2(
+                predictedX - getX(), predictedY - getY()));
+
+            setTurnRadarRightRadians(Utils.normalRelativeAngle(
+                absoluteBearing - getRadarHeadingRadians()));
+            setTurnGunRightRadians(Utils.normalRelativeAngle(
+                theta - getGunHeadingRadians()));
+            fire(bulletPower);
+        }
     }
-    
-    private double normalizeBearing(double angle) {
-        while (angle >  180) angle -= 360;
-        while (angle < -180) angle += 360;
-        return angle;
+
+    private void goToCorner() {
+        switch (corner) {
+            case 0:
+                setTurnRight(0);
+                setAhead(100);
+                break;
+            case 1:
+                setTurnRight(90);
+                setAhead(100);
+                break;
+            case 2:
+                setTurnRight(90);
+                setAhead(100);
+                break;
+            case 3:
+                setTurnRight(90);
+                setAhead(100);
+                break;
+        }
+        corner = ++corner % 4;
     }
 }
