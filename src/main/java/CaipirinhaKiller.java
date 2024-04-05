@@ -1,32 +1,39 @@
-import robocode.*;
-//import java.awt.Color;
+import robocode.Robot;
+import robocode.ScannedRobotEvent;
+import java.awt.Color;
+import java.util.Random;
 
-// API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
+public class MyRobot extends Robot {
+    Random rand = new Random();
 
-/**
- * Rafa - a robot by (your name here)
- */
-public class CaipirinhaKiller extends Robot{
     public void run() {
-        // Robot main loop: Do nothing (robot stays still) until an event occurs
+        // Set the robot's colors
+        setColors(Color.white, // Body
+                  Color.green, // Gun
+                  Color.white, // Radar
+                  Color.white, // Bullet
+                  Color.white); // Scan arc
+        
+        // Robot main loop
         while(true) {
-            turnGunRight(360); // Turn the gun to scan for enemies
-            // Doing nothing else here means the robot stays still when not scanning
+            turnGunRight(360); // Continuously turn gun to scan
         }
     }
 
     public void onScannedRobot(ScannedRobotEvent e) {
-        // Aim by rotating the gun to the enemy's bearing
+        // Aim and shoot
         double enemyBearing = this.getHeading() + e.getBearing();
         double gunTurnAmount = enemyBearing - this.getGunHeading();
         turnGunRight(normalizeBearing(gunTurnAmount));
-        
         fire(1);
-        turnRight(20);
-        ahead(10);
+        
+        // Turn right by a random amount between 20 and 60 degrees
+        turnRight(20 + rand.nextInt(41));
+        
+        // Move ahead by a random distance between 20 and 100 units
+        ahead(20 + rand.nextInt(81));
     }
     
-    // Method to normalize a bearing to between +180 and -180
     private double normalizeBearing(double angle) {
         while (angle >  180) angle -= 360;
         while (angle < -180) angle += 360;
