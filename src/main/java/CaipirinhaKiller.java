@@ -21,10 +21,8 @@ public class CaipirinhaKiller extends Robot{
         double gunTurnAmount = enemyBearing - this.getGunHeading();
         turnGunRight(normalizeBearing(gunTurnAmount));
         
-        // Fire a bullet
         fire(1);
-        
-        // Move ahead 10 units after shooting
+        turnRight(20);
         ahead(10);
     }
     
