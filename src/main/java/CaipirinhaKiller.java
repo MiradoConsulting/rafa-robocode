@@ -6,7 +6,7 @@ import robocode.*;
 /**
  * Rafa - a robot by (your name here)
  */
-public class Rafa extends Robot
+public class CaipirinhaKiller extends Robot
 {
 	/**
 	 * run: Rafa's default behavior
