@@ -1,4 +1,3 @@
-package mirado.rafa;
 import robocode.*;
 //import java.awt.Color;
 
